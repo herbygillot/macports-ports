@@ -14,12 +14,29 @@ homepage                https://www.mysql.com/
 # Set revision_client and revision_server to 0 on version bump.
 set revision_client 0
 set revision_server 0
+set revision_shell  0
 
 set name_mysql          ${name}
 set version_branch      [join [lrange [split ${version} .] 0 1] .]
 set boost_distver       [join [split ${boost_version} .] _]
 set boost_distname      boost_${boost_distver}
 
+master_sites        mysql:MySQL-${version_branch}:mysql \
+		    sourceforge:project/boost/boost/${boost_version}:boost
+
+distname            mysql-${version}
+
+distfiles           ${distname}${extract.suffix}:mysql \
+		    ${boost_distname}${extract.suffix}:boost
+
+checksums           ${distname}${extract.suffix} \
+		    rmd160  aa6f5fe3a890e8e4a7fef8a6c3a30701d925a79f \
+		    sha256  c6e3f38199a77bfd8a4925ca00b252d3b6159b90e4980c7232f1c58d6ca759d6 \
+		    size    190203398 \
+		    ${boost_distname}${extract.suffix} \
+		    rmd160  ad6cd576a5229a11601986908ff03261582c9f81 \
+		    sha256  9a2c2819310839ea373f42d69e733c339b4e9a19deab6bfec448281554aa4dbb \
+		    size    111710205
 
 if {$subport eq $name} {
     PortGroup           muniversal 1.0
@@ -34,23 +51,6 @@ if {$subport eq $name} {
     license             GPL-2
 
     revision            ${revision_client}
-
-    master_sites        mysql:MySQL-${version_branch}:mysql \
-                        sourceforge:project/boost/boost/${boost_version}:boost
-
-    distname            mysql-${version}
-
-    distfiles           ${distname}${extract.suffix}:mysql \
-                        ${boost_distname}${extract.suffix}:boost
-
-    checksums           ${distname}${extract.suffix} \
-                        rmd160  aa6f5fe3a890e8e4a7fef8a6c3a30701d925a79f \
-                        sha256  c6e3f38199a77bfd8a4925ca00b252d3b6159b90e4980c7232f1c58d6ca759d6 \
-                        size    190203398 \
-                        ${boost_distname}${extract.suffix} \
-                        rmd160  ad6cd576a5229a11601986908ff03261582c9f81 \
-                        sha256  9a2c2819310839ea373f42d69e733c339b4e9a19deab6bfec448281554aa4dbb \
-                        size    111710205
 
     depends_lib-append  path:lib/libssl.dylib:openssl \
                         port:cyrus-sasl2 \
@@ -222,6 +222,33 @@ as follows:
     livecheck.type      regex
     livecheck.url       https://dev.mysql.com/downloads/mysql/${version_branch}.html
     livecheck.regex     "MySQL Community Server (${version_branch}(\.\[0-9.\]+)?)"
+}
+
+subport ${name_mysql}-shell {
+    set	shell_distfile	mysql-shell-${version}-src${extract.suffix}
+
+    PortGroup           muniversal 1.0
+    PortGroup           cxx11 1.1
+    PortGroup           cmake 1.1
+
+    revision		${revision_shell}
+    license             GPL-2
+
+    description		The MySQL Shell is an interactive Javascript, Python, or SQL interface supporting development and administration for the MySQL Server.
+
+    depends_build	port:mysql8
+    depends_run		port:mysql8
+
+    master_sites-append	mysql:MySQL-Shell:mysql-shell
+
+    distfiles-append	${shell_distfile}:mysql-shell
+
+    checksums-append	${shell_distfile} \
+			rmd160  895f876545587d0ec5d07d6312085290fdc7997d \
+			sha256  5abf85cc489ceb177f523cd41e21f0fcfaf6fcaeb5f1b1f0c3f205338e6680f4 \
+			md5     8a1b15515ec6f3e21aa777bbfe77c721 \
+			size    17790638
+
 }
 
 subport ${name_mysql}-server {
