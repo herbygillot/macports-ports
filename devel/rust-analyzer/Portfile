@@ -1,0 +1,34 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+PortSystem          1.0
+PortGroup           github 1.0
+PortGroup           cargo 1.0
+
+github.setup        rust-analyzer rust-analyzer 2021-01-18 v
+categories          devel
+platforms           darwin
+maintainers         @fabius openmaintainer
+license             Apache-2
+
+homepage            https://rust-analyzer.github.io/
+description         An experimental Rust \
+                    compiler front-end for IDEs
+
+long_description    rust-analyzer is an experimental modular \
+                    compiler frontend for the Rust language. \
+                    It is a part of a larger rls-2.0 effort \
+                    to create excellent IDE support for Rust.
+
+master_sites        https://github.com/rust-analyzer/rust-analyzer/archive/
+distname            ${version}
+checksums           rmd160  c0db3ee3e3f6db7a03f8b53fa45b180b760f6504 \
+                    sha256  009ab946848719bb05bcaddab1cf5a75a45c5a92ae6dc31763adb42c3229f7db \
+                    size    1435696
+supported_archs     x86_64 arm64
+
+build {
+    system -W ${worksrcpath} "rm lib/README.md"
+    system -W ${worksrcpath} "cargo build --release"
+}
+destroot {
+    xinstall -m 0755 ${worksrcpath}/target/release/${name} ${destroot}${prefix}/bin/
+}
