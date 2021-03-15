@@ -3,8 +3,8 @@
 PortSystem          1.0
 PortGroup           github 1.0
 
-github.setup        lensapp lens 4.0.4 v
-revision            1
+github.setup        lensapp lens 4.1.4 v
+revision            0
 
 homepage            https://k8slens.dev
 
@@ -23,11 +23,12 @@ platforms           darwin
 maintainers         {gmail.com:herby.gillot @herbygillot} \
                     openmaintainer
 
-checksums           rmd160  e374b41eca51d9f69a5ac1ed3d0ef0ca231301d5 \
-                    sha256  285f5689d13cea70cb43beef51665cef93a03fb179550bbd76bb58af6eb9d147 \
-                    size    10034977
+checksums           rmd160  9d8cc9cbb5a1fddbf9cc0cc58c80487de1a2e388 \
+                    sha256  fa3103ec2148f1ac519e3c941789ca2a1e8374be8ab115e4e719d23a4efd95d1 \
+                    size    10375979
 
-depends_build       port:npm6 \
+depends_build       port:nodejs15 \
+                    port:npm6 \
                     port:yarn
 
 build.target        build
