@@ -41,12 +41,18 @@ use_configure       no
 use_xcode           yes
 
 build {
+    if {${configure.arch} eq "arm64}"} {
+        set elb_flags "--arm64"
+    } else {
+        set elb_flags {}
+    }
+
     # Set up all JS dependencies
     system -W ${worksrcpath} "${build.env} yarn --frozen-lockfile"
 
     # Build electron app
     system -W ${worksrcpath} \
-        "${build.env} yarn run electron:build --mac dir --publish never"
+        "${build.env} yarn run electron:build --mac dir --publish never ${elb_flags}"
 }
 
 destroot {
