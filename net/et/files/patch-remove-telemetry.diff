@@ -1,43 +1,21 @@
-From 9df261cd2bcc433947ecac7a0b7b052cee1ed3a8 Mon Sep 17 00:00:00 2001
-From: Zero King <l2dy@macports.org>
-Date: Sun, 9 May 2021 16:09:19 +0000
-Subject: [PATCH] Remove telemetry
-
----
- src/base/Headers.hpp              |   7 --
- src/terminal/TelemetryService.cpp | 137 ------------------------------
- 2 files changed, 144 deletions(-)
-
-diff --git src/base/Headers.hpp src/base/Headers.hpp
-index 147835c8..a67855f8 100644
---- src/base/Headers.hpp
-+++ src/base/Headers.hpp
-@@ -82,13 +82,6 @@ inline int close(int fd) { return ::closesocket(fd); }
- #include <unordered_set>
- #include <vector>
- 
--#if __has_include(<filesystem>)
--#include <filesystem>
+--- ./src/terminal/TelemetryService.cpp.orig	2021-12-28 08:15:47.000000000 -0500
++++ ./src/terminal/TelemetryService.cpp	2021-12-28 08:18:06.000000000 -0500
+@@ -91,158 +91,11 @@
+       logHttpClient(new httplib::Client(
+           "https://browser-http-intake.logs.datadoghq.com")),
+       shuttingDown(false) {
+-#ifdef NO_TELEMETRY
+   allowed = false;
+   return;
 -#else
--#include <experimental/filesystem>
--using namespace std::experimental;
--#endif
--
- #include "ET.pb.h"
- #include "ETerminal.pb.h"
- #include "ThreadPool.h"
-diff --git src/terminal/TelemetryService.cpp src/terminal/TelemetryService.cpp
-index 830d31b5..5bb6e91c 100644
---- src/terminal/TelemetryService.cpp
-+++ src/terminal/TelemetryService.cpp
-@@ -86,143 +86,6 @@ TelemetryService::TelemetryService(const bool _allow,
-   if (disableTelementry) {
-     allowed = false;
-   }
+-  char* disableTelementry = ::getenv("ET_NO_TELEMETRY");
+-  if (disableTelementry) {
+-    allowed = false;
+-  }
 -  if (allowed) {
 -    auto telemetryConfigPath = sago::getConfigHome() + "/et/telemetry.ini";
--    auto telemetryId = sole::uuid4();
--    if (filesystem::exists(telemetryConfigPath)) {
+-    telemetryId = sole::uuid4();
+-    if (fs::exists(telemetryConfigPath)) {
 -      // Load the config file
 -      CSimpleIniA ini(true, false, false);
 -      SI_Error rc = ini.LoadFile(telemetryConfigPath.c_str());
@@ -53,7 +31,7 @@ index 830d31b5..5bb6e91c 100644
 -      }
 -    } else {
 -      // Ensure directory exists
--      filesystem::create_directories(sago::getConfigHome() + "/et");
+-      fs::create_directories(sago::getConfigHome() + "/et");
 -
 -      // Create ini
 -      CSimpleIniA ini(true, false, false);
@@ -130,7 +108,8 @@ index 830d31b5..5bb6e91c 100644
 -
 -    logSendingThread.reset(new thread([this]() {
 -      auto nextDumpTime = std::chrono::system_clock::now();
--      while (!shuttingDown) {
+-      while (true) {
+-        bool lastRun = shuttingDown;
 -        string payload;
 -        int logBufferSize;
 -        {
@@ -139,7 +118,7 @@ index 830d31b5..5bb6e91c 100644
 -        }
 -        if (logBufferSize) {
 -          if (logBufferSize >= 1024 ||
--              nextDumpTime < std::chrono::system_clock::now()) {
+-              nextDumpTime < std::chrono::system_clock::now() || lastRun) {
 -            nextDumpTime =
 -                std::chrono::system_clock::now() + chrono::seconds(30);
 -            {
@@ -155,11 +134,6 @@ index 830d31b5..5bb6e91c 100644
 -            logHttpClient->set_read_timeout(1, 0);          // 1 second
 -            logHttpClient->set_write_timeout(1, 0);         // 1 second
 -
--            if (shuttingDown) {
--              // httplib isn't exit-safe, so we try our best to avoid calling it
--              // on shutdown
--              break;
--            }
 -            logHttpClient->Post(
 -                "/v1/input/"
 -                "pubfe47c2f8dfb3e8c26eb66ba4a456ec79?ddsource=browser&ddtags="
@@ -168,12 +142,20 @@ index 830d31b5..5bb6e91c 100644
 -          }
 -        }
 -        this_thread::sleep_for(chrono::milliseconds(100));
+-        if (lastRun) {
+-          this_thread::sleep_for(chrono::milliseconds(400));
+-          break;
+-        }
 -      }
 -    }));
 -  }
+-#endif
  }
  
  TelemetryService::~TelemetryService() {
--- 
-2.31.1
-
+-  if (!shuttingDown) {
+-    cerr << "Destroyed telemetryService without a shutdown";
+-  }
+ }
+ 
+ void TelemetryService::logToSentry(el::Level level, const string& message) {
