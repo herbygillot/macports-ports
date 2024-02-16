@@ -1,0 +1,48 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+PortGroup           github 1.0
+
+github.setup        gvansickle ucg 0.3.3
+github.tarball_from releases
+revision            0
+
+homepage            https://gvansickle.github.io/ucg/
+
+description         \
+    UniversalCodeGrep \(ucg\) is an extremely fast grep-like tool specialized \
+    for searching large bodies of source code.
+
+long_description    \
+    {*}${description} It is intended to be largely command-line compatible \
+    with Ack, to some extent with ag, and where appropriate with grep. Search \
+    patterns are specified as PCRE regexes. ucg is intended to address the \
+    impatient programmer\'s code searching needs. ucg is written in C++20 and \
+    takes advantage of the concurrency \(and other\) support of the language \
+    to increase scanning speed while reducing reliance on third-party \
+    libraries and increasing portability. Regex scanning is provided by the \
+    PCRE2 library, with its JIT compilation feature providing a huge \
+    performance gain on most platforms. Directory tree traversal is performed \
+    by multiple threads, reducing the impact of waiting for I\/O completions. \
+    Critical functions are implemented with hand-rolled vectorized \
+    \(SSE2\/4.2\/etc.\) versions selected at program load-time based on what \
+    the system supports, with non-vectorized fallbacks.
+
+categories          textproc
+installs_libs       no
+license             GPL-3
+maintainers         {gmail.com:herby.gillot @herbygillot} \
+                    openmaintainer
+supported_archs     x86_64
+
+checksums           rmd160  9283e76a6dab355a32d7e7cc4a7c0f635dfc79ce \
+                    sha256  116d832bbc743c7dd469e5e7f1b20addb3b7a08df4b4441d59da3acf221caf2d \
+                    size    755575
+
+distname            universalcodegrep-${version}
+
+compiler.cxx_standard \
+                    2020
+
+depends_lib-append  port:argp-standalone \
+                    port:pcre2
