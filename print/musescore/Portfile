@@ -1,0 +1,54 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+PortGroup           cmake   1.1
+PortGroup           github  1.0
+PortGroup           qt5     1.0
+
+github.setup        musescore MuseScore 4.3.0 v
+github.tarball_from archive
+name                musescore
+revision            0
+
+homepage            https://musescore.org/
+
+description         \
+    MuseScore is an open source and free music notation software
+
+long_description    {*}${description}
+
+categories          print
+license             GPL-3
+maintainers         {gmail.com:herby.gillot @herbygillot} \
+                    openmaintainer
+
+checksums           rmd160  01150d58953dff03f49ab7efa3707c82feca67fc \
+                    sha256  85ebd0130d70cda2b2ef166a0737b7aba31961779210f916bf37cb44b3f1e2a2 \
+                    size    137972818
+
+depends_lib-append  port:libsndfile \
+                    port:python312  \
+                    port:qt5-qtquickcontrols2 \
+                    port:qt5-qttools \
+                    port:zlib
+
+qt5.depends_component \
+                    qtbase \
+                    qtdeclarative \
+                    qtsvg \
+                    qtnetworkauth \
+                    qtxmlpatterns
+
+
+cmake.build_type    Release
+
+compiler.cxx_standard \
+                    2017
+
+configure.env-append \
+                    PATH=$env(PATH):${qt_bins_dir}
+
+build.env-append    PATH=$env(PATH):${qt_bins_dir}
+
+configure.args-append \
+                    -DMUE_COMPILE_QT5_COMPAT=ON
