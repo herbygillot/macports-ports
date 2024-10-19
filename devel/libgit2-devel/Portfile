@@ -11,7 +11,7 @@ conflicts           libgit2
 set my_name         libgit2
 
 # don't forget to update py-pygit2 and libgit2-glib as well
-github.setup        libgit2 libgit2 1.8.1 v
+github.setup        libgit2 libgit2 1.8.2 v
 github.tarball_from archive
 revision            0
 epoch               0
@@ -30,9 +30,9 @@ homepage            https://libgit2.org/
 
 dist_subdir         ${my_name}
 
-checksums           rmd160  d0cbd3059b71033316eea712b68377c77e9b43a8 \
-                    sha256  8c1eaf0cf07cba0e9021920bfba9502140220786ed5d8a8ec6c7ad9174522f8e \
-                    size    7608949
+checksums           rmd160  0a0b38c148be844acff4e0cb96d2225f4a7a3eed \
+                    sha256  184699f0d9773f96eeeb5cb245ba2304400f5b74671f313240410f594c566a28 \
+                    size    7610104
 
 depends_build-append \
                     path:bin/pkg-config:pkgconfig
