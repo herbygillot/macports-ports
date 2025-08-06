@@ -1,0 +1,39 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+
+PortGroup           cmake   1.1
+PortGroup           github  1.0
+
+github.setup        86Box 86Box 4.2.1 v
+github.tarball_from archive
+revision            0
+
+description         Emulator of x86-based machines
+
+long_description    \
+    ${name} is a low level x86 emulator that runs older operating systems \
+    and software designed for IBM PC systems and compatibles from 1981 \
+    through fairly recent system designs based on the PCI bus.
+
+checksums           rmd160  57207a4c555c0058b00bfc35176f51e66c841ffe \
+                    sha256  9d5627ef96feb815e66b87f167a1b26f4615fccd730334053293eb038f5ec3a9 \
+                    size    5320110
+
+categories          emulators
+license             GPL-2
+maintainers         {gmail.com:herby.gillot @herbygillot} \
+                    openmaintainer
+
+depends_build-append \
+                    port:pkgconfig
+
+depends_lib-append  port:fluidsynth \
+                    port:freetype   \
+                    port:libpng     \
+                    port:libsdl2    \
+                    port:libslirp   \
+                    port:libsndfile \
+                    port:qt5        \
+                    port:rtmidi     \
+                    port:zlib
