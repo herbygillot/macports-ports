@@ -554,6 +554,42 @@ proc go_toolchain.setup {go_version {label ""}} {
         delete ${worksrcpath}/pkg/bootstrap
     }
 
+    # make.bash builds the toolchain but runs nothing, so a successful build
+    # shows only that the bootstrap binary loaded and that the compiler
+    # self-hosted. That is the load-time question the min_darwin table already
+    # reasons about from the imports; it says nothing about whether the result
+    # behaves. run.bash runs the standard library and toolchain suite against
+    # the tree make.bash just built, which is what actually demonstrates a
+    # series works on a darwin major below upstream's floor. min_darwin claims
+    # four such majors for 1.21 through 1.24 (see above), and `port test
+    # go-X.Y` is how those claims get checked rather than argued.
+    #
+    # run.bash requires GOROOT/src as the working directory with ../bin/go
+    # already in place, sets GOPATH=/nonexist-gopath itself, and re-derives the
+    # rest through `go tool dist env`. GOROOT has to be passed explicitly: the
+    # build bakes in GOROOT_FINAL, which does not exist until the port is
+    # installed, and dist would otherwise resolve GOROOT to that path. run.bash
+    # also sets GOENV=off, so GOCACHE cannot come from the environment file and
+    # would default under HOME, outside what the sandbox grants the test phase.
+    # Both it and GOTMPDIR are therefore placed in workpath.
+    test.run            yes
+    test.dir            ${worksrcpath}/src
+    test.cmd            ./run.bash
+    test.target
+    test.env            GOROOT=${worksrcpath} \
+                        GOROOT_BOOTSTRAP=${go_toolchain.bootstrap_path}/go \
+                        GOARCH=${goarch} \
+                        GOOS=darwin \
+                        CC=[option configure.cc] \
+                        GOCACHE=${workpath}/.gocache \
+                        GOTMPDIR=${workpath}/.gotmp \
+                        HOME=${workpath}
+
+    pre-test {
+        xinstall -d ${workpath}/.gocache
+        xinstall -d ${workpath}/.gotmp
+    }
+
     destroot {
         # A deliberately malformed Mach-O test fixture that upsets destroot.
         delete ${worksrcpath}/src/cmd/vendor/github.com/google/pprof/internal/binutils/testdata/malformed_macho
