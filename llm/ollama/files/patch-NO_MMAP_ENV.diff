@@ -1,6 +1,6 @@
 --- a/envconfig/config.go
 +++ b/envconfig/config.go
-@@ -222,6 +222,8 @@
+@@ -224,6 +224,8 @@
  	NoHistory = Bool("OLLAMA_NOHISTORY")
  	// NoPrune disables pruning of model blobs on startup.
  	NoPrune = Bool("OLLAMA_NOPRUNE")
@@ -8,8 +8,8 @@
 +	NoMMap = Bool("OLLAMA_NO_MMAP")
  	// SchedSpread allows scheduling models across all GPUs.
  	SchedSpread = Bool("OLLAMA_SCHED_SPREAD")
- 	// MultiUserCache optimizes prompt caching for multi-user scenarios
-@@ -326,6 +328,7 @@
+ 	// ContextLength sets the default context length
+@@ -330,6 +332,7 @@
  		"OLLAMA_NO_CLOUD":             {"OLLAMA_NO_CLOUD", NoCloud(), "Disable Ollama cloud features (remote inference and web search)"},
  		"OLLAMA_NOHISTORY":            {"OLLAMA_NOHISTORY", NoHistory(), "Do not preserve readline history"},
  		"OLLAMA_NOPRUNE":              {"OLLAMA_NOPRUNE", NoPrune(), "Do not prune model blobs on startup"},
@@ -20,11 +20,12 @@
 
 --- a/llm/llama_server.go
 +++ b/llm/llama_server.go
-@@ -356,7 +356,7 @@
+@@ -628,7 +628,7 @@
+ 		}
  	}
  
- 	// UseMmap
--	if launch.opts.UseMMap != nil && !*launch.opts.UseMMap {
-+	if envconfig.NoMMap() || (launch.opts.UseMMap != nil && !*launch.opts.UseMMap) {
- 		params = append(params, "--no-mmap")
+-	if opts.UseMMap != nil && !*opts.UseMMap {
++	if envconfig.NoMMap() || (opts.UseMMap != nil && !*opts.UseMMap) {
+ 		return append(params, "--load-mode", "none")
  	}
+ 
