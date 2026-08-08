@@ -34,6 +34,10 @@ if {$subport eq $name} {
     PortGroup           select                      1.0
     PortGroup           openssl                     1.0
     PortGroup           legacysupport               1.1
+    # Under test: does a modern libc++ from MacPorts provide std::filesystem
+    # on darwin <= 18, where the SDK's marks it unavailable (macOS 10.15+)?
+    legacysupport.newest_darwin_requires_legacy 18
+    legacysupport.use_mp_libcxx     yes
 
     description         Multithreaded SQL database server
     long_description    MySQL is an open-source, multi-threaded SQL database.
@@ -95,7 +99,7 @@ if {$subport eq $name} {
     configure.cxxflags-append -include type_traits
 
     configure.args-append \
-        -DWITH_UNIT_TESTS=OFF \
+        -DWITH_UNIT_TESTS=ON \
         -DINSTALL_MYSQLTESTDIR=
 
     # cmake substitutes FIND_PROC into mysqld_safe, which uses it to test a
@@ -107,12 +111,6 @@ if {$subport eq $name} {
     # about the one pid, and match only its command.
     configure.args-append \
         -DFIND_PROC='ps -p \$PID -o command= | grep -v mysqld_safe | grep -- \$MYSQLD > /dev/null'
-
-    # Disable MySQL NDB (Network Database) Cluster. Note that -DWITH_NDB=OFF
-    # does not do this; it is already off, and storage/ndb is pulled in as a
-    # plugin regardless.
-    configure.args-append \
-        -DWITHOUT_NDBCLUSTER_STORAGE_ENGINE=1
 
     # MySQL installs its libraries into a private, per-port directory
     # (lib/${name_mysql}/mysql) and manages its own per-target RPATHs, whereas
@@ -161,8 +159,7 @@ if {$subport eq $name} {
     patch.pre_args-replace  -p0 -p1
     patchfiles      patch-cmake-install_layout.cmake.diff \
                     patch-CMakeLists-no-homebrew.diff \
-                    patch-no_warn_duplicate_libraries.diff \
-                    patch-no-test-components.diff
+                    patch-no_warn_duplicate_libraries.diff
 
     post-extract {
         file mkdir ${cmake.build_dir}/macports
