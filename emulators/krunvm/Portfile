@@ -7,7 +7,7 @@ PortGroup           cargo_fetch 1.0
 github.setup        libkrun krunvm 0.2.7 v
 github.tarball_from archive
 
-revision            0
+revision            1
 
 categories          emulators
 license             Apache-2
@@ -31,7 +31,8 @@ checksums           ${distname}${extract.suffix} \
 
 depends_build-append \
                     port:asciidoctor
-depends_lib-append  port:libkrun
+depends_lib-append  port:libiconv \
+                    port:libkrun
 depends_run-append  port:buildah \
                     port:libkrunfw
 
@@ -62,7 +63,15 @@ post-patch {
 
 post-destroot {
     xinstall -d -m 755 ${destroot}${prefix}/share/man/man1
-    foreach man [glob ${worksrcpath}/target/*/release/build/krunvm-*/out/*.1] {
+    # Build-script output is under build/krunvm-<hash>/out with older Cargo
+    # and build/krunvm/<hash>/out with its newer build-dir layout.
+    set mans [concat \
+        [glob -nocomplain ${worksrcpath}/target/*/release/build/krunvm-*/out/*.1] \
+        [glob -nocomplain ${worksrcpath}/target/*/release/build/krunvm/*/out/*.1]]
+    if {[llength ${mans}] == 0} {
+        return -code error "no krunvm man pages found in the build output"
+    }
+    foreach man ${mans} {
         xinstall -m 644 ${man} ${destroot}${prefix}/share/man/man1/
     }
 }
