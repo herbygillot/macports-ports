@@ -6,7 +6,7 @@ PortGroup           github  1.0
 
 github.setup        lsd-rs lsd 1.2.0 v
 github.tarball_from archive
-revision            0
+revision            1
 
 description         The next gen ls command
 
@@ -27,18 +27,24 @@ checksums           ${distname}${extract.suffix} \
 depends_build-append \
                     port:go-md2man
 
+depends_lib-append  port:zlib
+
 post-build {
     system -W ${worksrcpath} \
         "go-md2man -in ./doc/${name}.md -out ./doc/${name}.1"
 }
+
+# Cargo's newer build-dir layout no longer puts build-script output at
+# target/<triple>/release/build/lsd-*, so have lsd's build.rs write the
+# shell completions to a fixed place.
+build.env-append    SHELL_COMPLETIONS_DIR=${workpath}/completions
 
 destroot {
     xinstall -m 0755 \
         ${worksrcpath}/target/[cargo.rust_platform]/release/${name} \
         ${destroot}${prefix}/bin/
 
-    set assets_path \
-        [glob ${worksrcpath}/target/[cargo.rust_platform]/release/build/${name}-*]/out/
+    set assets_path ${workpath}/completions
 
     xinstall -m 0444 \
         ${worksrcpath}/doc/${name}.1 ${destroot}${prefix}/share/man/man1/
